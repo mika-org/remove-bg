@@ -8,5 +8,5 @@ call .venv\Scripts\activate
 echo Installing requirements...
 pip install -r requirements.txt
 echo Starting FastAPI server...
-uvicorn api.index:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 pause

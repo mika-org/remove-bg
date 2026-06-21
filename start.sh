@@ -24,4 +24,4 @@ python download_model.py
 
 # Start FastAPI using Uvicorn with production configuration (2 workers)
 echo "Starting FastAPI server on port 8000..."
-exec uvicorn api.index:app --host 0.0.0.0 --port 8000 --workers 2
+exec uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2

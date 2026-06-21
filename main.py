@@ -5,10 +5,9 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
-# Set U2NET_HOME to the project's local .u2net folder (which is in the project root, one level up from this file)
+# Set U2NET_HOME to the project's local .u2net folder
 current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-os.environ["U2NET_HOME"] = os.path.join(project_root, ".u2net")
+os.environ["U2NET_HOME"] = os.path.join(current_dir, ".u2net")
 
 import rembg
 
