@@ -477,6 +477,178 @@ async def index():
             footer a:hover {
                 text-decoration: underline;
             }
+
+            /* Tabs */
+            .tabs {
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 0.5rem;
+                width: 100%;
+            }
+
+            .tab {
+                padding: 0.5rem 1rem;
+                cursor: pointer;
+                font-weight: 600;
+                color: var(--text-secondary);
+                transition: all 0.3s ease;
+                border-bottom: 2px solid transparent;
+            }
+
+            .tab.active {
+                color: var(--accent-primary);
+                border-bottom-color: var(--accent-primary);
+            }
+
+            .tab:hover {
+                color: var(--text-primary);
+            }
+
+            /* URL Input Mode */
+            .url-input-container {
+                display: none;
+                flex-direction: column;
+                gap: 1rem;
+                padding: 2.5rem 1rem;
+                align-items: center;
+                width: 100%;
+                border: 2px dashed var(--border-color);
+                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.01);
+            }
+
+            .url-input-wrapper {
+                display: flex;
+                width: 100%;
+                max-width: 600px;
+                gap: 0.5rem;
+            }
+
+            .url-input {
+                flex-grow: 1;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid var(--border-color);
+                border-radius: 50px;
+                padding: 0.8rem 1.5rem;
+                color: var(--text-primary);
+                font-family: inherit;
+                font-size: 0.95rem;
+                outline: none;
+                transition: all 0.3s ease;
+            }
+
+            .url-input:focus {
+                border-color: var(--accent-primary);
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+            }
+
+            .url-help {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+            }
+
+            /* API Docs */
+            .docs-section {
+                width: 100%;
+                max-width: 1200px;
+                margin-top: 4rem;
+                border-top: 1px solid var(--border-color);
+                padding-top: 3rem;
+            }
+
+            .docs-section h2 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .docs-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            @media (max-width: 768px) {
+                .docs-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            .doc-card {
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 16px;
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+
+            .doc-card h3 {
+                font-size: 1.2rem;
+                font-weight: 700;
+            }
+
+            .doc-card p {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .badge {
+                padding: 0.25rem 0.6rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                display: inline-block;
+                align-self: flex-start;
+            }
+
+            .badge-post {
+                background: rgba(16, 185, 129, 0.1);
+                color: var(--success);
+                border: 1px solid rgba(16, 185, 129, 0.2);
+            }
+
+            .badge-get {
+                background: rgba(99, 102, 241, 0.1);
+                color: var(--accent-primary);
+                border: 1px solid rgba(99, 102, 241, 0.2);
+            }
+
+            .doc-card code {
+                background: rgba(0, 0, 0, 0.3);
+                padding: 0.2rem 0.5rem;
+                border-radius: 6px;
+                font-family: monospace;
+                font-size: 0.95rem;
+                color: var(--text-primary);
+                word-break: break-all;
+            }
+
+            .doc-card h4 {
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                color: var(--text-secondary);
+                margin-top: 0.5rem;
+                font-weight: 600;
+            }
+
+            .doc-card pre {
+                background: rgba(0, 0, 0, 0.3);
+                padding: 0.8rem;
+                border-radius: 8px;
+                font-family: monospace;
+                font-size: 0.85rem;
+                overflow-x: auto;
+                color: #e2e8f0;
+                border: 1px solid var(--border-color);
+            }
         </style>
     </head>
     <body>
@@ -501,6 +673,11 @@ async def index():
             </div>
 
             <div class="workspace">
+                <div class="tabs">
+                    <div class="tab active" id="tabUpload">Upload File</div>
+                    <div class="tab" id="tabUrl">Image URL</div>
+                </div>
+
                 <div class="loader-overlay" id="loader">
                     <div class="spinner"></div>
                     <p style="font-weight: 600;">Removing background... (Takes ~10s for the first image to load AI model)</p>
@@ -516,6 +693,14 @@ async def index():
                     </div>
                     <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Browse Files</button>
                     <input type="file" id="fileInput" class="file-input" accept="image/*">
+                 </div>
+
+                <div class="url-input-container" id="urlInputContainer">
+                    <div class="url-input-wrapper">
+                        <input type="text" id="imageUrlInput" placeholder="https://example.com/image.jpg" class="url-input">
+                        <button class="btn btn-primary" id="btnProcessUrl">Process URL</button>
+                    </div>
+                    <p class="url-help">Provide a direct link to any image (JPEG, PNG, WEBP).</p>
                 </div>
 
                 <div class="preview-container" id="previewContainer">
@@ -541,6 +726,38 @@ async def index():
                     </button>
                 </div>
             </div>
+
+            <!-- API Docs Section -->
+            <div class="docs-section">
+                <h2>API Documentation</h2>
+                <div class="docs-grid">
+                    <div class="doc-card">
+                        <h3>1. Remove Background (File Upload)</h3>
+                        <div>
+                            <span class="badge badge-post">POST</span>
+                            <code>/remove-bg</code>
+                        </div>
+                        <p>Upload a local image file and receive a transparent background-removed PNG.</p>
+                        <h4>Request Body (multipart/form-data):</h4>
+                        <pre>file: [Binary File]</pre>
+                        <h4>Example curl:</h4>
+                        <pre>curl -X POST -F "file=@photo.jpg" http://[your-domain]/remove-bg --output result.png</pre>
+                    </div>
+                    <div class="doc-card">
+                        <h3>2. Remove Background (From URL)</h3>
+                        <div>
+                            <span class="badge badge-get">GET</span>
+                            <span class="badge badge-post">POST</span>
+                            <code>/remove-bg-url</code>
+                        </div>
+                        <p>Download an image from a URL and remove its background, returning a transparent PNG.</p>
+                        <h4>Query Parameters:</h4>
+                        <pre>url: [Encoded Image URL]</pre>
+                        <h4>Example curl:</h4>
+                        <pre>curl "http://[your-domain]/remove-bg-url?url=https://example.com/photo.jpg" --output result.png</pre>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <footer>
@@ -557,6 +774,71 @@ async def index():
             const resetBtn = document.getElementById('resetBtn');
             const downloadBtn = document.getElementById('downloadBtn');
             const loader = document.getElementById('loader');
+
+            // New elements for URL input mode
+            const tabUpload = document.getElementById('tabUpload');
+            const tabUrl = document.getElementById('tabUrl');
+            const urlInputContainer = document.getElementById('urlInputContainer');
+            const imageUrlInput = document.getElementById('imageUrlInput');
+            const btnProcessUrl = document.getElementById('btnProcessUrl');
+
+            // Tab switching logic
+            tabUpload.addEventListener('click', () => {
+                tabUpload.classList.add('active');
+                tabUrl.classList.remove('active');
+                dropzone.style.display = 'flex';
+                urlInputContainer.style.display = 'none';
+                resetWorkspace();
+            });
+
+            tabUrl.addEventListener('click', () => {
+                tabUrl.classList.add('active');
+                tabUpload.classList.remove('active');
+                dropzone.style.display = 'none';
+                urlInputContainer.style.display = 'flex';
+                resetWorkspace();
+            });
+
+            btnProcessUrl.addEventListener('click', () => {
+                const url = imageUrlInput.value.trim();
+                if (!url) {
+                    alert('Please enter a valid image URL.');
+                    return;
+                }
+                
+                originalFileName = 'url_image.png';
+                originalImg.src = url; // Display original from URL
+                
+                urlInputContainer.style.display = 'none';
+                previewContainer.style.display = 'grid';
+                
+                removeBgFromUrl(url);
+            });
+
+            async function removeBgFromUrl(url) {
+                loader.style.display = 'flex';
+                
+                try {
+                    const response = await fetch('/remove-bg-url?url=' + encodeURIComponent(url));
+
+                    if (!response.ok) {
+                        const errText = await response.text();
+                        throw new Error(errText || 'Failed to process image');
+                    }
+
+                    const blob = await response.blob();
+                    processedImageUrl = URL.createObjectURL(blob);
+                    resultImg.src = processedImageUrl;
+                    
+                    actionButtons.style.display = 'flex';
+                } catch (error) {
+                    console.error(error);
+                    alert('An error occurred: ' + error.message);
+                    resetWorkspace();
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
 
             let processedImageUrl = null;
             let originalFileName = 'image.png';
@@ -640,12 +922,21 @@ async def index():
             }
 
             function resetWorkspace() {
-                dropzone.style.display = 'flex';
                 previewContainer.style.display = 'none';
                 actionButtons.style.display = 'none';
                 fileInput.value = '';
+                imageUrlInput.value = '';
                 originalImg.src = '';
                 resultImg.src = '';
+                
+                if (tabUpload.classList.contains('active')) {
+                    dropzone.style.display = 'flex';
+                    urlInputContainer.style.display = 'none';
+                } else {
+                    dropzone.style.display = 'none';
+                    urlInputContainer.style.display = 'flex';
+                }
+
                 if (processedImageUrl) {
                     URL.revokeObjectURL(processedImageUrl);
                     processedImageUrl = null;
