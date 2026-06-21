@@ -1,9 +1,18 @@
 import io
+import os
 from fastapi import FastAPI, File, UploadFile, HTTPException, Response
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
+
+# Set U2NET_HOME to the project's local .u2net folder
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.environ["U2NET_HOME"] = os.path.join(current_dir, ".u2net")
+
 import rembg
+
+# Create a global session with the lightweight u2netp model
+rembg_session = rembg.new_session("u2netp")
 
 app = FastAPI(
     title="Background Removal API",
@@ -44,8 +53,8 @@ async def remove_background(file: UploadFile = File(...)):
         # Read uploaded image bytes
         input_bytes = await file.read()
         
-        # Remove background using rembg
-        output_bytes = rembg.remove(input_bytes)
+        # Remove background using rembg with the preloaded session
+        output_bytes = rembg.remove(input_bytes, session=rembg_session)
         
         # Return the processed image bytes as PNG
         return Response(content=output_bytes, media_type="image/png")
