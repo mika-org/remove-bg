@@ -61,6 +61,45 @@ async def remove_background(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
+@app.api_route("/remove-bg-url", methods=["GET", "POST"])
+async def remove_background_from_url(url: str):
+    """
+    Remove background from an image URL.
+    Fetches the image from the provided URL (via GET or POST) and returns a transparent PNG.
+    """
+    import requests
+    if not url:
+        raise HTTPException(status_code=400, detail="Missing 'url' query parameter.")
+        
+    try:
+        # Fetch the image from the URL
+        response = requests.get(url, timeout=15)
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to fetch image from URL. Status code: {response.status_code}"
+            )
+        
+        # Check content type if available
+        content_type = response.headers.get("content-type", "")
+        if content_type and not content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=400,
+                detail="URL does not point to a valid image."
+            )
+            
+        input_bytes = response.content
+        
+        # Remove background using rembg with the preloaded session
+        output_bytes = rembg.remove(input_bytes, session=rembg_session)
+        
+        # Return the processed image bytes as PNG
+        return Response(content=output_bytes, media_type="image/png")
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=400, detail=f"Request to fetch image failed: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+
 @app.get("/", response_class=HTMLResponse)
 async def index():
     """
