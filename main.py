@@ -1,8 +1,9 @@
 import io
 import os
-from fastapi import FastAPI, File, UploadFile, HTTPException, Response
+from fastapi import FastAPI, File, UploadFile, HTTPException, Response, Form, Header
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 from PIL import Image
 
 # Set U2NET_HOME to the project's local .u2net folder
@@ -62,7 +63,7 @@ async def remove_background(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
 
 @app.api_route("/remove-bg-url", methods=["GET", "POST"])
-async def remove_background_from_url(url: str):
+async def remove_background_from_url(url: str, authorization: str = Header(None)):
     """
     Remove background from an image URL.
     Fetches the image from the provided URL (via GET or POST) and returns a transparent PNG.
@@ -72,8 +73,12 @@ async def remove_background_from_url(url: str):
         raise HTTPException(status_code=400, detail="Missing 'url' query parameter.")
         
     try:
-        # Fetch the image from the URL
-        response = requests.get(url, timeout=15)
+        # Fetch the image from the URL, forwarding the authorization token if present
+        headers = {}
+        if authorization:
+            headers["Authorization"] = authorization
+            
+        response = requests.get(url, headers=headers, timeout=15)
         if response.status_code != 200:
             raise HTTPException(
                 status_code=400,
