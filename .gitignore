@@ -1,0 +1,13 @@
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.gemini/
+.vscode/
+scratch/
+test_avatar*
+test_api.py
